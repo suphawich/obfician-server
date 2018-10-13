@@ -16,13 +16,15 @@ class PostsController extends Controller
      */
     public function index()
     {
+        $posts = Post::get();
+        $posts->map(function($post) {
+            $post->link = $this->getLinkFromPost($post);
+            return $post;
+        });
         $result = [
-            'data' => Post::get()
+            'data' => $posts
         ];
-        $json = json_encode($result, JSON_UNESCAPED_UNICODE);
-        return response($json)
-                ->header('Content-Length', strlen($json))
-                ->header('Content-Type', 'application/json');
+        return $this->send($result);
     }
 
     /**
@@ -45,24 +47,21 @@ class PostsController extends Controller
                     ->header('Content-Type', 'application/json;charset=utf-8');
         }
 
-        $path = Storage::putFile('public/images/posts', $request->file('image'));
-        $filename = basename($path);
-        $link = $request->root() . '/images/posts/' . $filename;
+        $path = Storage::putFile('public/images/posts/cover', $request->file('image'));
 
         $newPost = new Post;
         $newPost->title = $title;
         $newPost->description = $description;
-        $newPost->link = $path;
+        $newPost->path_cover = $path;
         $newPost->token = str_random(64);
         $newPost->save();
 
+        $post = $newPost;
+        $post->link = $this->getLinkFromPath($path);
         $result = [
-            'data' => $newPost
+            'data' => $post
         ];
-        $json = json_encode($result, JSON_UNESCAPED_UNICODE);
-        return response($json)
-                ->header('Content-Length', strlen($json))
-                ->header('Content-Type', 'application/json;charset=utf-8');
+        return $this->send($result);
     }
 
     /**
@@ -73,16 +72,11 @@ class PostsController extends Controller
      */
     public function show(Post $post)
     {
-        $path = $post->link;
-        $filename = basename($path);
-        error_log(request()->root());
+        $post->link = $this->getLinkFromPost($post);
         $result = [
             'data' => $post
         ];
-        $json = json_encode($result, JSON_UNESCAPED_UNICODE);
-        return response($json)
-                ->header('Content-Length', strlen($json))
-                ->header('Content-Type', 'application/json;charset=utf-8');
+        return $this->send($result);
     }
 
     /**
@@ -106,5 +100,26 @@ class PostsController extends Controller
     public function destroy(Post $post)
     {
         //
+    }
+
+    private function send($result)
+    {
+        $json = json_encode($result, JSON_UNESCAPED_UNICODE);
+        return response($json)
+                ->header('Content-Length', strlen($json))
+                ->header('Content-Type', 'application/json;charset=utf-8');
+    }
+
+    private function getLinkFromPost($post)
+    {
+        $path = $post->path_cover;
+        return $this->getLinkFromPath($path);
+    }
+
+    private function getLinkFromPath($path)
+    {
+        $filename = basename($path);
+        $link = request()->root() . '/images/posts/cover/' . $filename;
+        return $link;
     }
 }

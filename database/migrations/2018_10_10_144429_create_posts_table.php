@@ -17,7 +17,7 @@ class CreatePostsTable extends Migration
             $table->increments('id');
             $table->string('title');
             $table->text('description')->nullable();
-            $table->string('link');
+            $table->string('path_cover')->nullable();
             $table->string('token', 100);
             $table->timestamps();
         });

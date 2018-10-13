@@ -6,7 +6,7 @@ $factory->define(App\Post::class, function (Faker $faker) {
     return [
         'title' => $faker->text(100),
         'description' => $faker->text,
-        'link' => $faker->imageUrl,
+        'path_cover' => $faker->image,
         'token' => str_random(64)
     ];
 });
