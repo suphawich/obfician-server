@@ -13,9 +13,12 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Route::middleware('auth:api')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
 
 Route::resource('/posts', 'API\PostsController')
- 		->except(['create', 'edit']);
+         ->except(['create', 'edit']);
+
+Route::resource('/items', 'API\ItemsController')
+         ->except(['create', 'edit']);

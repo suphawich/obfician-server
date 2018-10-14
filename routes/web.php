@@ -19,3 +19,8 @@ Route::get('/images/posts/cover/{filename}', function($filename) {
     $pathToFile = storage_path().'/app/public/images/posts/cover/'.$filename;
     return response()->file($pathToFile);
 });
+
+Route::get('/images/items/{filename}', function($filename) {
+    $pathToFile = storage_path().'/app/public/images/items/'.$filename;
+    return response()->file($pathToFile);
+});

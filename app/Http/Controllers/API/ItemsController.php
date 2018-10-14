@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Post;
+use App\Item;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 
-class PostsController extends Controller
+class ItemsController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,13 +16,13 @@ class PostsController extends Controller
      */
     public function index()
     {
-        $posts = Post::get();
-        $posts->map(function($post) {
-            $post->link = $this->getLinkFromPost($post);
-            return $post;
+        $items = Item::get();
+        $items->map(function($item) {
+            $item->link = $this->getLinkFromItem($item);
+            return $item;
         });
         $result = [
-            'data' => $posts
+            'data' => $items
         ];
         return $this->send($result);
     }
@@ -35,9 +35,9 @@ class PostsController extends Controller
      */
     public function store(Request $request)
     {
-        $title = $request->input('title');
+        $name = $request->input('name');
         $description = $request->input('description');
-        if ($description == null || $title == null || !$request->hasFile('image')) {
+        if ($description == null || $name == null || !$request->hasFile('image')) {
             $fault = [
                 'message' => 'Not found data.'
             ];
@@ -47,19 +47,19 @@ class PostsController extends Controller
                     ->header('Content-Type', 'application/json;charset=utf-8');
         }
 
-        $path = Storage::putFile('public/images/posts/cover', $request->file('image'));
+        $path = Storage::putFile('public/images/items', $request->file('image'));
 
-        $newPost = new Post;
-        $newPost->title = $title;
-        $newPost->description = $description;
-        $newPost->path_cover = $path;
-        $newPost->token = str_random(64);
-        $newPost->save();
+        $newItem = new Item;
+        $newItem->name = $name;
+        $newItem->description = $description;
+        $newItem->path = $path;
+        $newItem->token = str_random(64);
+        $newItem->save();
 
-        $post = $newPost;
-        $post->link = $this->getLinkFromPath($path);
+        $item = $newItem;
+        $item->link = $this->getLinkFromPath($path);
         $result = [
-            'data' => $post
+            'data' => $item
         ];
         return $this->send($result);
     }
@@ -67,13 +67,13 @@ class PostsController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Post  $post
+     * @param  \App\Item  $item
      * @return \Illuminate\Http\Response
      */
     public function show($id)
     {
-        $post = Post::find($id);
-        if ($post == null) {
+        $item = Item::find($id);
+        if ($item == null) {
             $msg = 'Object not found.';
             $result = [
                 'message' => $msg
@@ -81,9 +81,9 @@ class PostsController extends Controller
             return $this->send($result, 400);
         }
 
-        $post->link = $this->getLinkFromPost($post);
+        $item->link = $this->getLinkFromItem($item);
         $result = [
-            'data' => $post
+            'data' => $item
         ];
         return $this->send($result);
     }
@@ -92,39 +92,39 @@ class PostsController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Post  $post
+     * @param  \App\Item  $item
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
-        $post = Post::find($id);
-        if ($post == null) {
+        $item = Item::find($id);
+        if ($item == null) {
             $msg = 'Object not found.';
             $result = [
                 'message' => $msg
             ];
             return $this->send($result, 400);
         }
-        $title = $request->input('title');
+        $name = $request->input('name');
         $description = $request->input('description');
-        if ($title != null) {
-            $post->title = $title;
+        if ($name != null) {
+            $item->name = $name;
             
         }
         if ($description != null) {
-            $post->description = $description;
+            $item->description = $description;
         }
         if ($request->hasFile('image')) {
-            $path = Storage::putFile('public/images/posts/cover', $request->file('image'));
-            $oldPath = $post->path_cover;
+            $path = Storage::putFile('public/images/items', $request->file('image'));
+            $oldPath = $item->path;
             Storage::delete($oldPath);
-            $post->path_cover = $path;
+            $item->path = $path;
         }
 
-        $post->save();
-        $post->link = $this->getLinkFromPath($post->path_cover);
+        $item->save();
+        $item->link = $this->getLinkFromPath($item->path);
         $result = [
-            'data' => $post
+            'data' => $item
         ];
         return $this->send($result);
     }
@@ -132,13 +132,13 @@ class PostsController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Post  $post
+     * @param  \App\Item  $item
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {
-        $post = Post::find($id);
-        if ($post == null) {
+        $item = Item::find($id);
+        if ($item == null) {
             $msg = 'Object not found.';
             $result = [
                 'message' => $msg
@@ -146,7 +146,7 @@ class PostsController extends Controller
             return $this->send($result, 400);
         }
         // $isDeleted = $post->delete();
-        $isDeleted = $post->forceDelete();
+        $isDeleted = $item->forceDelete();
         if (!$isDeleted) {
             $msg = 'Can not delete post.';
             $result = [
@@ -155,7 +155,7 @@ class PostsController extends Controller
             return $this->send($result, 400);
         }
 
-        Storage::delete($post->path_cover);
+        Storage::delete($item->path);
         $result = [
             'result' => $isDeleted
         ];
@@ -170,16 +170,16 @@ class PostsController extends Controller
                 ->header('Content-Type', 'application/json;charset=utf-8');
     }
 
-    private function getLinkFromPost($post)
+    private function getLinkFromItem($item)
     {
-        $path = $post->path_cover;
+        $path = $item->path;
         return $this->getLinkFromPath($path);
     }
 
     private function getLinkFromPath($path)
     {
         $filename = basename($path);
-        $link = request()->root() . '/images/posts/cover/' . $filename;
+        $link = request()->root() . '/images/items/' . $filename;
         return $link;
     }
 }

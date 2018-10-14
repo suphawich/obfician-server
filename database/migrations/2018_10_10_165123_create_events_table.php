@@ -17,6 +17,7 @@ class CreateEventsTable extends Migration
             $table->increments('id');
             $table->text('description')->nullable();
             $table->timestamp('date');
+            $table->string('token', 100);
             $table->timestamps();
         });
     }

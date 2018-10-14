@@ -17,7 +17,8 @@ class CreateItemsTable extends Migration
             $table->increments('id');
             $table->string('name');
             $table->text('description')->nullable();
-            $table->string('link')->nullable();
+            $table->string('path')->nullable();
+            $table->string('token', 100);
             $table->timestamps();
         });
     }
