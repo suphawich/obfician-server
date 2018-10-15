@@ -105,7 +105,7 @@ class ItemsController extends Controller
             ];
             return $this->send($result, 400);
         }
-        $name = $request->input('name');
+        $name = $request->input('title');
         $description = $request->input('description');
         if ($name != null) {
             $item->name = $name;
@@ -145,17 +145,17 @@ class ItemsController extends Controller
             ];
             return $this->send($result, 400);
         }
-        // $isDeleted = $post->delete();
+        // $isDeleted = $item->delete();
         $isDeleted = $item->forceDelete();
         if (!$isDeleted) {
-            $msg = 'Can not delete post.';
+            $msg = 'Can not delete item.';
             $result = [
                 'message' => $msg
             ];
             return $this->send($result, 400);
         }
 
-        Storage::delete($item->path);
+        Storage::delete($item->path_cover);
         $result = [
             'result' => $isDeleted
         ];

@@ -24,3 +24,8 @@ Route::get('/images/items/{filename}', function($filename) {
     $pathToFile = storage_path().'/app/public/images/items/'.$filename;
     return response()->file($pathToFile);
 });
+
+Route::get('/images/users/avatar/{filename}', function($filename) {
+    $pathToFile = storage_path().'/app/public/images/users/avatar/'.$filename;
+    return response()->file($pathToFile);
+});
